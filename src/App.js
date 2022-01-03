@@ -1,4 +1,3 @@
-import './App.css'
 import { useEffect, useState } from 'react'
 import { createApi } from 'unsplash-js'
 import {} from 'react-icons/fa'
