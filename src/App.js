@@ -20,32 +20,27 @@ function App() {
     accessKey: API_KEY,
   })
 
-  const loadUnsplashPhotos = async (query, page = 1) => {
+  function getPhotos(query, page = 1) {
     setLoading(true)
-    const res = await unsplash.search.getPhotos({
-      query,
-      page,
-      perPage: pages,
+    return new Promise((resolve) => {
+      unsplash.search
+        .getPhotos({
+          query,
+          page,
+          perPage: pages,
+        })
+        .then(({ response }) => {
+          setLoading(false)
+          resolve({ response })
+        })
     })
-    if (res.status === 200) {
-      setLoading(false)
-      setPhotos(res.response.results)
-      setTotal(res.response.total)
-    }
   }
 
-  const loadMorePhotos = async (query, page) => {
-    setLoading(true)
-    const res = await unsplash.search.getPhotos({
-      query,
-      page,
-      perPage: pages,
+  const loadUnsplashPhotos = () => {
+    getPhotos(queryPhrase, 1).then(({ response }) => {
+      setPhotos(response.results)
+      setTotal(response.total)
     })
-    if (res.status === 200) {
-      setLoading(false)
-      setPhotos([...photos, ...res.response.results])
-      setTotal(res.response.total)
-    }
   }
 
   const onFormSubmit = (e) => {
@@ -60,7 +55,9 @@ function App() {
       document.documentElement.scrollHeight
 
     if (bottom) {
-      loadMorePhotos(queryPhrase, photos.length / pages + 1)
+      getPhotos(queryPhrase, photos.length / pages + 1).then(({ response }) => {
+        setPhotos([...photos, ...response.results])
+      })
     }
   }
 
@@ -73,7 +70,6 @@ function App() {
     <>
       <GlobalStyles />
       <h1>Unsplash API Photo Seeker</h1>
-
       <SearchBar
         setQuery={setQueryPhrase}
         onFormSubmit={onFormSubmit}
